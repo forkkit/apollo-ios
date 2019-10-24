@@ -8,6 +8,7 @@
 
 import XCTest
 @testable import Apollo
+import ApolloTestSupport
 import StarWarsAPI
 
 class HTTPTransportTests: XCTestCase {
@@ -192,6 +193,35 @@ class HTTPTransportTests: XCTestCase {
     let nonIdenticalTransport = HTTPNetworkTransport(url: self.url,
                                                      delegate: self)
     XCTAssertNotEqual(self.networkTransport, nonIdenticalTransport)
+  }
+  
+  func testClientNameAndVersionHeadersAreSent() {
+    let mockSession = MockURLSession()
+    let network = HTTPNetworkTransport(url: self.url,
+                                       session: mockSession)
+    let query = HeroNameQuery(episode: .empire)
+    let _ = network.send(operation: query) { _ in }
+    
+    guard let request = mockSession.lastRequest else {
+      XCTFail("last request should not be nil")
+      return
+    }
+    
+    guard let clientName = request.value(forHTTPHeaderField: HTTPNetworkTransport.headerFieldNameClientName) else {
+      XCTFail("Client name on last request was nil!")
+      return
+    }
+    
+    XCTAssertFalse(clientName.isEmpty, "Client name was empty!")
+    XCTAssertEqual(clientName, network.clientName)
+    
+    guard let clientVersion = request.value(forHTTPHeaderField: HTTPNetworkTransport.headerFieldNameClientVersion) else {
+      XCTFail("Client version on last request was nil!")
+      return
+    }
+    
+    XCTAssertFalse(clientVersion.isEmpty, "Client version was empty!")
+    XCTAssertEqual(clientVersion, network.clientVersion)
   }
 }
 
