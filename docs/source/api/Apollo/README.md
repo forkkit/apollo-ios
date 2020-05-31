@@ -12,6 +12,7 @@
 -   [GraphQLSelectionSet](protocols/GraphQLSelectionSet/)
 -   [GraphQLSubscription](protocols/GraphQLSubscription/)
 -   [HTTPNetworkTransportDelegate](protocols/HTTPNetworkTransportDelegate/)
+-   [HTTPNetworkTransportGraphQLErrorDelegate](protocols/HTTPNetworkTransportGraphQLErrorDelegate/)
 -   [HTTPNetworkTransportPreflightDelegate](protocols/HTTPNetworkTransportPreflightDelegate/)
 -   [HTTPNetworkTransportRetryDelegate](protocols/HTTPNetworkTransportRetryDelegate/)
 -   [HTTPNetworkTransportTaskCompletedDelegate](protocols/HTTPNetworkTransportTaskCompletedDelegate/)
@@ -46,6 +47,7 @@
 
 -   [ApolloClient](classes/ApolloClient/)
 -   [ApolloStore](classes/ApolloStore/)
+-   [Atomic](classes/Atomic/)
 -   [EmptyCancellable](classes/EmptyCancellable/)
 -   [GraphQLQueryWatcher](classes/GraphQLQueryWatcher/)
 -   [GraphQLResponse](classes/GraphQLResponse/)
@@ -55,22 +57,28 @@
 -   [MultipartFormData](classes/MultipartFormData/)
 -   [ReadTransaction](classes/ReadTransaction/)
 -   [ReadWriteTransaction](classes/ReadWriteTransaction/)
+-   [TaskData](classes/TaskData/)
+-   [URLSessionClient](classes/URLSessionClient/)
 
 ## Enums
 
 -   [ApolloClientError](enums/ApolloClientError/)
 -   [CachePolicy](enums/CachePolicy/)
+-   [ContinueAction](enums/ContinueAction/)
 -   [ErrorKind](enums/ErrorKind/)
+-   [GraphQLFileError](enums/GraphQLFileError/)
 -   [GraphQLHTTPRequestError](enums/GraphQLHTTPRequestError/)
 -   [GraphQLOperationType](enums/GraphQLOperationType/)
 -   [GraphQLOutputType](enums/GraphQLOutputType/)
 -   [JSONDecodingError](enums/JSONDecodingError/)
 -   [Source](enums/Source/)
+-   [URLSessionClientError](enums/URLSessionClientError/)
 
 ## Extensions
 
 -   [ApolloClient](extensions/ApolloClient/)
 -   [Array](extensions/Array/)
+-   [Atomic](extensions/Atomic/)
 -   [Bool](extensions/Bool/)
 -   [Dictionary](extensions/Dictionary/)
 -   [DispatchQueue](extensions/DispatchQueue/)
@@ -88,6 +96,7 @@
 -   [Int](extensions/Int/)
 -   [JSONDecodingError](extensions/JSONDecodingError/)
 -   [JSONEncodable](extensions/JSONEncodable/)
+-   [NetworkTransport](extensions/NetworkTransport/)
 -   [Optional](extensions/Optional/)
 -   [RawRepresentable](extensions/RawRepresentable/)
 -   [Record](extensions/Record/)
@@ -101,7 +110,6 @@
 
 -   [unzip(_:)](methods/unzip(_:)/)
 -   [unzip(_:)](methods/unzip(_:)/)
--   [unzip(_:count:)](methods/unzip(_:count:)/)
 
 # Reference Documentation
 This reference documentation was generated with

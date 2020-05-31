@@ -9,30 +9,34 @@ protocol TestConfig {
 }
 
 class DefaultConfig: TestConfig {
+  let transport =  HTTPNetworkTransport(url: URL(string: "http://localhost:8080/graphql")!)
   func network() -> HTTPNetworkTransport {
-    return HTTPNetworkTransport(url: URL(string: "http://localhost:8080/graphql")!)
+    return transport
   }
 }
 
 class APQsConfig: TestConfig {
+  let transport = HTTPNetworkTransport(url: URL(string: "http://localhost:8080/graphql")!,
+                                       enableAutoPersistedQueries: true)
   func network() -> HTTPNetworkTransport {
-    return HTTPNetworkTransport(url: URL(string: "http://localhost:8080/graphql")!,
-                                enableAutoPersistedQueries: true)
+    return transport
   }
 }
 
 class APQsWithGetMethodConfig: TestConfig, HTTPNetworkTransportRetryDelegate{
+  
   var alreadyRetried = false
-  func networkTransport(_ networkTransport: HTTPNetworkTransport, receivedError error: Error, for request: URLRequest, response: URLResponse?, retryHandler: @escaping (Bool) -> Void) {
-    retryHandler(!alreadyRetried)
+  func networkTransport(_ networkTransport: HTTPNetworkTransport, receivedError error: Error, for request: URLRequest, response: URLResponse?, continueHandler: @escaping (HTTPNetworkTransport.ContinueAction) -> Void) {
+    continueHandler(!alreadyRetried ? .retry : .fail(error))
     alreadyRetried = true
   }
   
   func network() -> HTTPNetworkTransport {
-    return HTTPNetworkTransport(url: URL(string: "http://localhost:8080/graphql")!,
+    let transport = HTTPNetworkTransport(url: URL(string: "http://localhost:8080/graphql")!,
                                 enableAutoPersistedQueries: true,
-                                useGETForPersistedQueryRetry: true,
-                                delegate: self)
+                                useGETForPersistedQueryRetry: true)
+    transport.delegate = self
+    return transport
   }
   
 }
@@ -51,10 +55,14 @@ class StarWarsServerAPQsTests: StarWarsServerTests {
   }
 }
 
-class StarWarsServerTests: XCTestCase {
+class StarWarsServerTests: XCTestCase, CacheTesting {
   // MARK: Queries
   var config: TestConfig!
 
+  var cacheType: TestCacheProvider.Type {
+    InMemoryTestCacheProvider.self
+  }
+  
   override func setUp() {
     super.setUp()
     config = DefaultConfig()

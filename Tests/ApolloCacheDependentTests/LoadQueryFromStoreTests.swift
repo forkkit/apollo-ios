@@ -6,8 +6,12 @@ import ApolloSQLite
 import ApolloTestSupport
 import StarWarsAPI
 
-class LoadQueryFromStoreTests: XCTestCase {
+class LoadQueryFromStoreTests: XCTestCase, CacheTesting {
   var store: ApolloStore!
+  
+  var cacheType: TestCacheProvider.Type {
+    InMemoryTestCacheProvider.self
+  }
   
   func testLoadingHeroNameQuery() throws {
     let initialRecords: RecordSet = [
@@ -294,32 +298,55 @@ class LoadQueryFromStoreTests: XCTestCase {
             XCTFail("Incorrect error type for primary error: \(error)")
             return
           }
-          
           switch graphQLError.underlying {
-          case is JSONDecodingError:
-            if (cache is InMemoryNormalizedCache) {
-              // This is expected for in-memory caching
-              break
-            } else {
-              XCTFail("Incorrect error type for underlying with in-memory cache: \(graphQLError.underlying)")
-            }
-          #if canImport(ApolloSQLite)
-          case is SQLiteNormalizedCacheError:
-            if (cache is SQLiteNormalizedCache) {
-              // This is expected for SQLite caching
-              break
-            } else {
-              XCTFail("Incorrect error type for underlying with SQLite cache: \(graphQLError.underlying)")
-            }
-          #endif
+          case JSONDecodingError.couldNotConvert(value: _, to: _):
+            break
           default:
-            XCTFail("Incorrect error type for underlying: \(graphQLError.underlying)")
+             XCTFail("Invalid error type")
           }
         }
       }
     }
   }
-  
+
+
+  func testLoadingQueryWithFloats() throws {
+    let starshipLength = 1234.5
+    let coordinates = [[38.857150, -94.798464]]
+
+    let initialRecords: RecordSet = [
+      "QUERY_ROOT": ["starshipCoordinates(coordinates:\(coordinates))": Reference(key: "starshipCoordinates(coordinates:\(coordinates))")],
+      "starshipCoordinates(coordinates:\(coordinates))": ["__typename": "Starship",
+                                                          "name": "Millennium Falcon",
+                                                          "length": starshipLength,
+                                                          "coordinates": coordinates]
+    ]
+
+    withCache(initialRecords: initialRecords) { (cache) in
+      store = ApolloStore(cache: cache)
+
+      let query = StarshipCoordinatesQuery(coordinates: coordinates)
+
+      load(query: query) { result in
+        switch result {
+        case .success(let graphQLResult):
+          XCTAssertNil(graphQLResult.errors)
+
+          guard let data = graphQLResult.data else {
+            XCTFail("No data returned with result")
+            return
+          }
+
+          XCTAssertEqual(data.starshipCoordinates?.name, "Millennium Falcon")
+          XCTAssertEqual(data.starshipCoordinates?.length, starshipLength)
+          XCTAssertEqual(data.starshipCoordinates?.coordinates, coordinates)
+        case .failure(let error):
+          XCTFail("Unexpected error: \(error)")
+        }
+      }
+    }
+  }
+
   // MARK: - Helpers
   
   private func load<Query: GraphQLQuery>(query: Query, resultHandler: @escaping GraphQLResultHandler<Query.Data>) {
